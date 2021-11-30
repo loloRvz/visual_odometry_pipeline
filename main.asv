@@ -42,7 +42,7 @@ end
 
 %% Bootstrap
 bootstrap_frames(1) = 0;
-bootstrap_frames(2) = 2;
+bootstrap_frames(2) = 3;
 
 if ds == 0
     img0 = imread([kitti_path '/05/image_0/' ...

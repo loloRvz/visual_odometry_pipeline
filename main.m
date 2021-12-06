@@ -5,9 +5,9 @@ close all;
 %% Setup
 ds = 2; % 0: KITTI, 1: Malaga, 2: parking
 
-kitti_path = './data/kitti';
-malaga_path = './data/malaga-urban-dataset-extract-07';
-parking_path = './data/parking';
+kitti_path = './datasets/kitti';
+malaga_path = './datasets/malaga-urban-dataset-extract-07';
+parking_path = './datasets/parking';
 addpath(genpath(pwd));
 
 if ds == 0
@@ -43,7 +43,7 @@ end
 
 %% Bootstrap
 bootstrap_frames(1) = 0;
-bootstrap_frames(2) = 5;
+bootstrap_frames(2) = 2;
 
 if ds == 0
     img0 = imread([kitti_path '/05/image_0/' ...

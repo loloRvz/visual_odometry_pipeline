@@ -43,7 +43,7 @@ end
 
 %% Bootstrap
 bootstrap_frames(1) = 0;
-bootstrap_frames(2) = 3;
+bootstrap_frames(2) = 2;
 
 if ds == 0
     img0 = imread([kitti_path '/05/image_0/' ...
@@ -66,39 +66,48 @@ else
     assert(false);
 end
 
-%Detect points img0
-points0 = detectMinEigenFeatures(img0);
-pointImage0 = insertMarker(img0,points0.Location,'+','Color','white');
-% figure;
-% imshow(pointImage0);
-% title('Detected points img0');
+%Keypoint correspondences between first 2 frames (Harris)
+corner_patch_size = 9;
+harris_kappa = 0.08;
+num_keypoints = 200;
+nonmaximum_supression_radius = 8;
+descriptor_radius = 9;
+match_lambda = 4;
 
-%Init tracker
-tracker = vision.PointTracker('MaxBidirectionalError',1);
-initialize(tracker,points0.Location,img0);
-
-%Track points to img1
-[points1,validity] = tracker(img1);
-pointImage1 = insertMarker(img1,points1(validity, :),'+');
-% figure;
-% imshow(pointImage1);
-% title('Tracked points img1');
-
-points0 = (points0(validity,:).Location');
-points1 = (points1(validity,:)');
-
-% figure;
-% imshow(img1);
+%Harris Scores
+harris_scores0 = harris(img0, corner_patch_size, harris_kappa);
+harris_scores1 = harris(img1, corner_patch_size, harris_kappa);
+%Keypoints
+keypoints0 = selectKeypoints(...
+    harris_scores0, num_keypoints, nonmaximum_supression_radius);
+keypoints1 = selectKeypoints(...
+    harris_scores1, num_keypoints, nonmaximum_supression_radius);
+% figure(1);
+% imshow(img0);
 % hold on;
-% plot(points1(1, :), points1(2, :), 'rx', 'Linewidth', 2);
-% plot([points0(1,:); points1(1,:)], ...
-%      [points0(2,:); points1(2,:)], ...
-%      'g-', 'Linewidth', 3);
+% plot(keypoints0(2, :), keypoints0(1, :), 'rx', 'Linewidth', 2);
+%Keypoint descriptors
+descriptors0 = describeKeypoints(img0, keypoints0, descriptor_radius);
+descriptors1 = describeKeypoints(img1, keypoints1, descriptor_radius);
+
+%Match descriptors
+matches = matchDescriptors(descriptors1, descriptors0, match_lambda);
+[~, indx1, indx0] = find(matches);
+matched_points0 = keypoints0(:,indx0);
+matched_points1 = keypoints1(:,indx1);
+
+figure(2);
+imshow(img1);
+hold on;
+plot(keypoints1(2, :), keypoints1(1, :), 'rx', 'Linewidth', 2);
+plot([matched_points0(2,:); matched_points1(2,:)], ...
+     [matched_points0(1,:); matched_points1(1,:)], ...
+     'g-', 'Linewidth', 3);
  
  
 %Flip from matrix index to image coordinates
-matched_points0 = points0;
-matched_points1 = points1;
+matched_points0 = flip(matched_points0);
+matched_points1 = flip(matched_points1);
 
 %Fundamental matrix
 [F,inliersIndex] = estimateFundamentalMatrix(matched_points0',...

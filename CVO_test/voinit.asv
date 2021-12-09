@@ -23,12 +23,12 @@ str = "..\data\parking\images\img_";
 %str = "C:\Users\samso\OneDrive\Bureau\etude\VAMR\Exercise 6 - Two-view Geometry\data\";
 I_R = rgb2gray(imread(sprintf('%s%05d.png',str,0)));
 %selection of the index of the second frame 
-idx = 12;
+idx = 10;
 
 %extract features
 %P_R = detectHarrisFeatures(I_R);
- P_R = detectSIFTFeatures(I_R);
-% P_R = P_R.selectStrongest(200);
+P_R = detectMinEigenFeatures(I_R);
+P_R = detectMinEigenFeatures(I_R);
 % num_features = 500;
 % P_R = selectStrongest(P_R,num_features);
 P_R = P_R.Location;

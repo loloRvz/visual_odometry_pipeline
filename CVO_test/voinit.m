@@ -20,10 +20,11 @@ cameraParams = cameraParameters('IntrinsicMatrix',IntrinsicMatrix);
 
 % read first image
 str = "..\data\parking\images\img_";
+%str ="..\data\kitti\05\image_0\";
 %str = "C:\Users\samso\OneDrive\Bureau\etude\VAMR\Exercise 6 - Two-view Geometry\data\";
 I_R = rgb2gray(imread(sprintf('%s%05d.png',str,0)));
 %selection of the index of the second frame 
-idx = 12;
+idx = 8;
 
 %extract features
 %P_R = detectHarrisFeatures(I_R);

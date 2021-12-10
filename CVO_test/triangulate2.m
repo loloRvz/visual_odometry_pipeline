@@ -14,27 +14,25 @@ function [newP,newX,C_i,f_i,T_i] = triangulate2(C_i,f_i,T_i,R_C_W, t_W_C,K,C_i_1
         M1 = K*[RWC_i' TCW_i];
         p1x = cross2Matrix([f_i(i,:)';1]);
         p2x = cross2Matrix([C_i(i,:)';1]);
-        A = [p1x*M1;p2x*M2];
+        p3x = cross2Matrix([C_i_1(i,:)';1]);
+        A = [p1x*M1;p2x*M2;p3x*M3];
         [~,~,V] = svd(A);
         P = V(:,end);
         P = P (1:3)/P (end);
         P1 = R_C_W*(P-t_W_C');
         P2 = RWC_i'*(P-TWC_i);
-        if (P1(3)<=0.7 || P2(3)<=0.7)
+        if (P1(3)<=0.5 || P2(3)<=0.5)
             continue
         end
 %         csalpha = (P-t_W_C')'*(P-TWC_i)/norm(P-t_W_C')/norm(P-TWC_i);
-        p3x = cross2Matrix([C_i_1(i,:)';1]);
-        A = [p1x*M1;p3x*M3];
-        [~,~,V] = svd(A);
-        P3 = V(:,end);
-        P3 = P3 (1:3)/P3 (end);
-        if norm(P-P3)<0.05
+        if abs(atan2(norm(cross(P-t_W_C',P-TWC_i)), dot(P-t_W_C',P-TWC_i)))>2*pi/180
         keep(i) = false;
-        newP(end+1,:) = C_i(i,:);
-        newX(end+1,:) = P';
+        newP(i,:) = C_i(i,:);
+        newX(i,:) = P';
         end
     end
+    newP = newP(not(keep),:);
+    newX = newX(not(keep),:);
     C_i = C_i(keep,:);
     f_i = f_i(keep,:);
     T_i = T_i(keep,:);

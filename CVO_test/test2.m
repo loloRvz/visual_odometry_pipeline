@@ -58,7 +58,7 @@ histloc = [];
 
 for i = idx+1:2760
     %read a new frame
-    I = rgb2gray(imread(sprintf('%s%05d.png',str,i)));
+    I = imread(sprintf('%s%06d.png',str,i));
 
     %track point from old frame to new frame
     [P_i,keepP] = trackerP(I);
@@ -95,11 +95,12 @@ for i = idx+1:2760
         %track point from old frame to new frame
         [C_i,keepC] = trackerC(I);
         C_i = C_i(keepC,:);
+        C_i_1 = C_i_1(keepC,:);
         f_i = f_i_1(keepC,:);
         T_i = T_i_1(keepC,:);
 
         %triangulate new points
-        [newP,newX,C_i,f_i,T_i]=triangulate2dto3d(C_i,f_i,T_i,R_C_W, t_W_C,IntrinsicMatrix');
+        [newP,newX,C_i,f_i,T_i]=triangulate2(C_i,f_i,T_i,R_C_W, t_W_C,IntrinsicMatrix',C_i_1,R_C_W_1, t_W_C_1);
         P_i=[P_i;newP];
         X_i=[X_i;newX];
     else
@@ -135,8 +136,8 @@ for i = idx+1:2760
     figure (8) 
     imshow(I);
     hold on
-%     plotMatches(1:size(P_i_1,1), flipud(P_i(1:size(P_i_1,1),:)'), flipud(P_i_1'))
-    plotMatches(1:size(f_i,1), flipud(C_i'), flipud(f_i'))
+    plotMatches(1:size(P_i_1,1), flipud(P_i(1:size(P_i_1,1),:)'), flipud(P_i_1'))
+%     plotMatches(1:size(f_i,1), flipud(C_i'), flipud(f_i'))
 %     plot(C_i(:,1),C_i(:,2),"mo");
     plot(P_i(:,1),P_i(:,2),"gx");
     if numel(newP)>0
@@ -150,6 +151,8 @@ for i = idx+1:2760
     C_i_1 = C_i;
     f_i_1 = f_i;
     T_i_1 = T_i;
+    R_C_W_1 =R_C_W;
+    t_W_C_1 =t_W_C;
 
     release(trackerP);
     release(trackerC);

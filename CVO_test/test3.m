@@ -56,18 +56,25 @@ trackerC = vision.PointTracker('MaxBidirectionalError',1);
 histori = [];
 histloc = [];
 
-for i = idx+1:199
+for i = idx+1:2760
     %read a new frame
     I = rgb2gray(imread(sprintf('%s%05d.png',str,i)));
 
     %track point from old frame to new frame
     [P_i,keepP] = trackerP(I);
     P_i = P_i(keepP,:);
+    P_i_1 = P_i_1(keepP,:);
     X_i = X_i_1(keepP,:);
 
     %estimate pose
+    [~,~,keepP_1] = estimateWorldCameraPose(P_i,X_i,cameraParams);
+    [~,~,keepP_2] = estimateWorldCameraPose(P_i,X_i,cameraParams);
+    P_i = P_i(keepP_1|keepP_2,:);
+    P_i_1 = P_i_1(keepP_1|keepP_2,:);
+    X_i = X_i(keepP_1|keepP_2,:);
     [R_C_W,t_W_C,keepP] = estimateWorldCameraPose(P_i,X_i,cameraParams);
     P_i = P_i(keepP,:);
+    P_i_1 = P_i_1(keepP,:);
     X_i = X_i(keepP,:);
 
     %save pose
@@ -79,9 +86,12 @@ for i = idx+1:199
     plot3(X_i(:,1),X_i(:,2),X_i(:,3),"mo");
     hold on
     for j = 1:size(histloc,1)
-        plotCoordinateFrame(reshape(histori(j,:,:),3,3), histloc(j,:)', 2);
+        %plotCoordinateFrame(reshape(histori(j,:,:),3,3), histloc(j,:)', 2);
+       plot3(histloc(:,1),histloc(:,2),histloc(:,3),"r-")
     end
     hold off
+   % xlim([0,50])
+   % zlim([-5,20])
     view(0,0)
 
     newP=[];
@@ -106,7 +116,7 @@ for i = idx+1:199
     
     %extract new feature
     corners = detectSIFTFeatures(I);
-    corners =corners.selectStrongest(200);
+    %corners =corners.selectStrongest(200);
     corners = corners.Location;
     %row = find(corners(:,1)>500 & corners(:,1)<630);
     %corners(row,:)= [] ;
@@ -130,8 +140,8 @@ for i = idx+1:199
     figure (8) 
     imshow(I);
     hold on
-    plotMatches(1:size(P_i,1), flipud(P_i'), flipud(f_i'))
-%     plotMatches(1:size(f_i,1), flipud(C_i'), flipud(f_i'))
+%     plotMatches(1:size(P_i_1,1), flipud(P_i(1:size(P_i_1,1),:)'), flipud(P_i_1'))
+    plotMatches(1:size(f_i,1), flipud(C_i'), flipud(f_i'))
 %     plot(C_i(:,1),C_i(:,2),"mo");
     plot(P_i(:,1),P_i(:,2),"gx");
     if numel(newP)>0
